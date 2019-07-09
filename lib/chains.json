@@ -1,0 +1,16 @@
+[
+  {
+    "ac_name": "KMD",
+    "nSPV": "1",
+    "connect": ["23.254.165.16"]
+  },
+  {
+    "ac_name": "ILN",
+    "ac_supply": "10000000000",
+    "ac_cc": "2",
+    "addressindex": "1",
+    "spentindex": "1",
+    "nSPV": "1",
+    "connect": ["5.9.102.210"]
+  }
+]
