@@ -18,7 +18,7 @@ pip packages needed:
 
 ## Starting:  
 
-* Put wallet files to same folder with komodod (komodod should support nSPV)
+* Put wallet files to same folder with komodod or put komodod to the same folder with wallet (komodod should support nSPV)
 
 * Specify chain ticker as cli arg on start. For now KMD and ILN supported: 
 `python3 main.py KMD` or `python3 main.py ILN`
