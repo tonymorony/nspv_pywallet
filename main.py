@@ -113,12 +113,17 @@ def nspv_send_tx(event):
 def refresh(event):
     current_address = current_address_text["text"][-34:]
     listunspent_output = rpc_proxy.nspv_listunspent(current_address)
-    if "error" in listunspent_output and listunspent_output["error"] == "no utxos result":
-        current_balance_text["text"] = "Balance: 0 " + ac_name
+    if "wifexpires" in listunspent_output:
+        logout_timer_text["text"] = "Logout in: " + str(rpc_proxy.nspv_getinfo()["wifexpires"]) + " seconds"
+        if "error" in listunspent_output and listunspent_output["error"] == "no utxos result":
+            current_balance_text["text"] = "Balance: 0 " + ac_name
+        else:
+            current_balance_text["text"] = "Balance: " + str(listunspent_output["balance"]) + " " + ac_name
     else:
-        current_balance_text["text"] = "Balance: " + str(listunspent_output["balance"]) + " " + ac_name
-    logout_timer_text["text"] = "Logout in: " + str(rpc_proxy.nspv_getinfo()["wifexpires"]) + " seconds"
-
+        current_address_text["text"] = "Address: please login first!"
+        current_balance_text["text"] = "Balance: please login first!"
+        logout_timer_text["text"] = "Logout in: please login first!"
+        
 
 def confirm_broadcasting(spend_output, popup_window):
     try:
