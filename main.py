@@ -182,11 +182,23 @@ def confirmation_popup(spend_output):
     popup.mainloop()
 
 
+def custom_paste(event):
+    try:
+        event.widget.delete("sel.first", "sel.last")
+    except:
+        pass
+    event.widget.insert("insert", event.widget.clipboard_get())
+    return "break"
+
+
 get_new_address_button.bind('<Button-1>', get_new_address)
 nspv_login_button.bind('<Button-1>', nspv_login)
 nspv_spend_button.bind('<Button-1>', nspv_send_tx)
 nspv_logout_button.bind('<Button-1>', nspv_logout)
 refresh_button.bind('<Button-1>', refresh)
+amount_input.bind("<<Paste>>", custom_paste)
+wif_input.bind("<<Paste>>", custom_paste)
+address_input.bind("<<Paste>>", custom_paste)
 
 # widgets drawing
 get_new_address_button.grid(row=0, sticky='nesw', padx=(5,5), pady=(10,0))
