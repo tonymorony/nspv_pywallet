@@ -96,6 +96,10 @@ def nspv_login(event):
     if "error" in listunspent_output and listunspent_output["error"] == "no utxos result":
         current_balance_text["text"] = "Balance: 0 " + ac_name
     else:
+        if len(listunspent_output["utxos"]) < 10:
+            for utxo in listunspent_output["utxos"]:
+                print(utxo)
+                rpc_proxy.nspv_txproof(utxo["txid"], str(utxo["height"]))
         current_balance_text["text"] = "Balance: " + str(listunspent_output["balance"]) + " " + ac_name
     logout_timer_text["text"] = "Logout in: " + str(rpc_proxy.nspv_getinfo()["wifexpires"]) + " seconds"
 
@@ -112,7 +116,7 @@ def nspv_logout(event):
 
 def nspv_send_tx(event):
     nspv_spend_output = rpc_proxy.nspv_spend(str(address_input.get()), str(amount_input.get()))
-    print("nspv_spend_output " + str(address_input.get() + " "  + str(amount_input.get())))
+    print("nspv_spend " + str(address_input.get() + " "  + str(amount_input.get())))
     print(nspv_spend_output)
     if "vout" in nspv_spend_output:
         confirmation_popup(nspv_spend_output)
@@ -149,6 +153,7 @@ def confirm_broadcasting(spend_output, popup_window):
     except Exception as e:
         wallet_interact_messages.replace('1.0', '100.0', spend_output)
     finally:
+        refresh("test")
         popup_window.destroy()
 
 
