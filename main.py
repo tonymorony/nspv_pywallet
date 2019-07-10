@@ -21,6 +21,7 @@ while True:
         connect_attempts_counter += 1
         try:
             get_info_output = rpc_proxy.nspv_getinfo()
+            print(get_info_output)
             if "nSPV" in get_info_output and get_info_output["nSPV"] == "superlite":
                 print(sys.argv[1] + " daemon is running. Welcome to nSPV pywallet!")
                 break
@@ -76,6 +77,7 @@ logout_timer_text = tk.Label(root, text="Logout in: please login first!")
 # buttons bindings
 def get_new_address(event):
     new_address_info = rpc_proxy.getnewaddress()
+    print(new_address_info)
     new_address_info_string = "wif: " + new_address_info["wif"] + "\n" \
                               + "address: " + new_address_info["address"] + "\n" \
                               + "pubkey: " + new_address_info["pubkey"] + "\n"
@@ -84,9 +86,11 @@ def get_new_address(event):
 
 def nspv_login(event):
     login_info = rpc_proxy.nspv_login(wif_input.get())
+    print(login_info)
     wallet_interact_messages.replace('1.0', '100.0', login_info)
     current_address_text["text"] = "Address: " + login_info["address"]
     listunspent_output = rpc_proxy.nspv_listunspent(login_info["address"])
+    print(listunspent_output)
     if "error" in listunspent_output and listunspent_output["error"] == "no utxos result":
         current_balance_text["text"] = "Balance: 0 " + ac_name
     else:
@@ -96,6 +100,7 @@ def nspv_login(event):
 
 def nspv_logout(event):
     logout_info = rpc_proxy.nspv_logout()
+    print(logout_info)
     wallet_interact_messages.replace('1.0', '100.0', logout_info)
     current_address_text["text"] = "Address: please login first!"
     current_balance_text["text"] = "Balance: please login first!"
@@ -104,6 +109,7 @@ def nspv_logout(event):
 
 def nspv_send_tx(event):
     nspv_spend_output = rpc_proxy.nspv_spend(str(address_input.get()), str(amount_input.get()))
+    print(nspv_spend_output)
     if "vout" in nspv_spend_output:
         confirmation_popup(nspv_spend_output)
     else:
@@ -113,7 +119,9 @@ def nspv_send_tx(event):
 def refresh(event):
     current_address = current_address_text["text"][-34:]
     listunspent_output = rpc_proxy.nspv_listunspent(current_address)
+    print(listunspent_output)
     nspv_getinfo_output = rpc_proxy.nspv_getinfo()
+    print(nspv_getinfo_output)
     if "wifexpires" in nspv_getinfo_output:
         logout_timer_text["text"] = "Logout in: " + str(rpc_proxy.nspv_getinfo()["wifexpires"]) + " seconds"
         if "error" in listunspent_output and listunspent_output["error"] == "no utxos result":
@@ -129,6 +137,7 @@ def refresh(event):
 def confirm_broadcasting(spend_output, popup_window):
     try:
         nspv_broadcast_output = rpc_proxy.nspv_broadcast(spend_output["hex"])
+        print(nspv_broadcast_output)
         wallet_interact_messages.replace('1.0', '100.0', nspv_broadcast_output)
     except Exception as e:
         wallet_interact_messages.replace('1.0', '100.0', spend_output)
