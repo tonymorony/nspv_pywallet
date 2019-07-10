@@ -137,7 +137,10 @@ def refresh(event):
         if "error" in listunspent_output and listunspent_output["error"] == "no utxos result":
             current_balance_text["text"] = "Balance: 0 " + ac_name
         else:
-            current_balance_text["text"] = "Balance: " + str(listunspent_output["balance"]) + " " + ac_name
+            try:
+                current_balance_text["text"] = "Balance: " + str(listunspent_output["balance"]) + " " + ac_name
+            except KeyError:
+                current_balance_text["text"] = "Balance: 0 " + ac_name
     else:
         current_address_text["text"] = "Address: please login first!"
         current_balance_text["text"] = "Balance: please login first!"
