@@ -112,7 +112,7 @@ def nspv_logout(event):
 
 def nspv_send_tx(event):
     nspv_spend_output = rpc_proxy.nspv_spend(str(address_input.get()), str(amount_input.get()))
-    print("nspv_spend_output " + str(address_input.get() + " "  + str(amount_input.get())
+    print("nspv_spend_output " + str(address_input.get() + " "  + str(amount_input.get())))
     print(nspv_spend_output)
     if "vout" in nspv_spend_output:
         confirmation_popup(nspv_spend_output)
