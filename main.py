@@ -6,6 +6,7 @@ import sys
 import subprocess
 import time
 
+
 # daemon initialization
 try:
     ac_name = sys.argv[1]
@@ -30,6 +31,7 @@ while True:
                 print("Please restart " + sys.argv[1] + " daemon in nSPV client mode (-nSPV=1 param)")
                 sys.exit()
         except Exception as e:
+            print(e)
             print(sys.argv[1] +" daemon is not started! Lets try to start")
             # TODO: have to parse json with params
             if sys.argv[1] == "KMD":

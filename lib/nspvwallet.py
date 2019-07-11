@@ -1,7 +1,25 @@
 import platform
 import os
 import re
-from slickrpc import Proxy
+import slickrpc
+
+
+class CustomProxy(slickrpc.Proxy):
+    def __init__(self,
+                 service_url=None,
+                 service_port=None,
+                 conf_file=None,
+                 timeout=3000):
+        config = dict()
+        if conf_file:
+            config = slickrpc.ConfigObj(conf_file)
+        if service_url:
+            config.update(self.url_to_conf(service_url))
+        if service_port:
+            config.update(rpcport=service_port)
+        elif not config.get('rpcport'):
+            config['rpcport'] = 7771
+        self.conn = self.prepare_connection(config, timeout=timeout)
 
 
 def def_credentials(chain):
@@ -34,4 +52,4 @@ def def_credentials(chain):
             print("check "+coin_config_file)
             exit(1)
 
-    return(Proxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
+    return(CustomProxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
