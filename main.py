@@ -55,12 +55,12 @@ while True:
 root = tkT.ThemedTk(theme="equilux", background=True)  # overall darker theme
 root.title("nSPV pywallet")
 root.resizable(False, False)
-root.iconbitmap('kmd.ico')  # ICO still showing square edges
+root.iconbitmap('lib/kmd.ico')  # ICO still showing square edges
 style = ttk.Style()
 style.map("TButton", background=[('pressed', 'darkslategray4')]) # greenish color on button press
 
 # KMD Logo (Could be clearer)
-img = PhotoImage(file='KMD_Horiz_Dark.png').subsample(3,3)
+img = PhotoImage(file='lib/KMD_Horiz_Dark.png').subsample(3,3)
 lbl_img = ttk.Label(root, image=img)
 
 
