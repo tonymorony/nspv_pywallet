@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
+from tkinter import ttk
+import ttkthemes as tkT
 import tkinter as tk
+from tkinter import PhotoImage
 from lib import nspvwallet
 import sys
 import subprocess
@@ -49,32 +52,46 @@ while True:
         sys.exit()
 
 # main window
-root = tk.Tk()
+root = tkT.ThemedTk(theme="equilux", background=True)  # overall darker theme
 root.title("nSPV pywallet")
-root.geometry("720x680")
 root.resizable(False, False)
+root.iconbitmap('lib/kmd.ico')  # ICO still showing square edges
+style = ttk.Style()
+style.map("TButton", background=[('pressed', 'darkslategray4')]) # greenish color on button press
+
+# KMD Logo (Could be clearer)
+img = PhotoImage(file='lib/KMD_Horiz_Dark.png').subsample(3,3)
+lbl_img = ttk.Label(root, image=img)
+
 
 # widgets creation
-wallet_create_messages = tk.Text(root, height=4, width=70)
-wallet_interact_messages = tk.Text(root, height=7, width=70)
+wallet_create_messages = tk.Text(root, height=4, width=70, bg='darkslategray4')
+wallet_interact_messages = tk.Text(root, height=7, width=70, bg='darkslategray4')
 
 
-get_new_address_button = tk.Button(root, text="Get new address")
-nspv_login_button = tk.Button(root, text="Login")
-nspv_logout_button = tk.Button(root, text="Logout")
-refresh_button = tk.Button(root, text="Refresh")
+get_new_address_button = ttk.Button(root, text="Get new address")
+nspv_login_button = ttk.Button(root, text="Login")
+nspv_logout_button = ttk.Button(root, text="Logout")
+refresh_button = ttk.Button(root, text="Refresh")
 
-wif_input = tk.Entry(root, width=50)
-nspv_login_text = tk.Label(root, text="Input wif to login:")
-nspv_spend_text = tk.Label(root, text="Send to address:")
-amount_text = tk.Label(root, text="Amount:")
-amount_input = tk.Entry(root, width=50)
-nspv_spend_button = tk.Button(root, text="Send")
-address_input = tk.Entry(root, width=50)
-current_address_text = tk.Label(root, text="Address: please login first!")
-current_balance_text = tk.Label(root, text="Balance: please login first!")
-logout_timer_text = tk.Label(root, text="Logout in: please login first!")
+wif_input = ttk.Entry(root, width=50)
+nspv_login_text = ttk.Label(root, text="Input wif to login:")
+nspv_spend_text = ttk.Label(root, text="Send to address:")
+amount_text = ttk.Label(root, text="Amount:")
+amount_input = ttk.Entry(root, width=50)
+nspv_spend_button = ttk.Button(root, text="Send")
+address_input = ttk.Entry(root, width=50)
+current_address_text = ttk.Label(root, text="Address: please login first!")
+current_balance_text = ttk.Label(root, text="Balance: please login first!")
+logout_timer_text = ttk.Label(root, text="Logout in: please login first!")
 
+# find Center of screen (needs testing on different screens
+def center():
+    windowWidth = root.winfo_reqwidth()
+    windowHeight = root.winfo_reqheight()
+    positionRight = int(root.winfo_screenwidth() / 4 - windowWidth / 4)
+    positionDown = int(root.winfo_screenheight() / 3 - windowHeight / 1)
+    root.geometry("+{}+{}".format(positionRight, positionDown))
 
 # buttons bindings
 def get_new_address(event):
@@ -85,6 +102,7 @@ def get_new_address(event):
                               + "address: " + new_address_info["address"] + "\n" \
                               + "pubkey: " + new_address_info["pubkey"] + "\n"
     wallet_create_messages.replace('1.0', '100.0', new_address_info_string)
+    # wallet_create_messages.grid(row=1, sticky='nesw', padx=(10, 10), pady=(10, 0)) # might hide box until pressed?
 
 
 def nspv_login(event):
@@ -163,25 +181,25 @@ def confirm_broadcasting(spend_output, popup_window):
 
 
 def confirmation_popup(spend_output):
-    popup = tk.Tk()
+    popup = ttk.Tk()
     popup.wm_title("Please confirm your transaction")
-    label = tk.Label(popup, text="You're about to spend: " + str(spend_output["vout"][0]["value"]) + " " + ac_name)
-    label2 = tk.Label(popup, text="Destination address: " + str(spend_output["vout"][0]["scriptPubKey"]["addresses"][0]))
-    label3 = tk.Label(popup, text="Input txid: " + str(spend_output["vin"][0]["txid"]))
+    label = ttk.Label(popup, text="You're about to spend: " + str(spend_output["vout"][0]["value"]) + " " + ac_name)
+    label2 = ttk.Label(popup, text="Destination address: " + str(spend_output["vout"][0]["scriptPubKey"]["addresses"][0]))
+    label3 = ttk.Label(popup, text="Input txid: " + str(spend_output["vin"][0]["txid"]))
     if spend_output["retcodes"][0] == 0:
-        label4 = tk.Label(popup, text="Input notarized")
+        label4 = ttk.Label(popup, text="Input notarized")
     else:
-        label4 = tk.Label(popup, text="Input NOT notarized")
-    label5 = tk.Label(popup, text="Tx fee: 0.0001 " + ac_name)
-    label6 = tk.Label(popup, text="Rewards: " + str(spend_output["rewards"]) + " " + ac_name)
+        label4 = ttk.Label(popup, text="Input NOT notarized")
+    label5 = ttk.Label(popup, text="Tx fee: 0.0001 " + ac_name)
+    label6 = ttk.Label(popup, text="Rewards: " + str(spend_output["rewards"]) + " " + ac_name)
     label.pack(side="top", fill="x", pady=10)
     label2.pack(side="top", fill="x", pady=10)
     label3.pack(side="top", fill="x", pady=10)
     label4.pack(side="top", fill="x", pady=10)
     label5.pack(side="top", fill="x", pady=10)
     label6.pack(side="top", fill="x", pady=10)
-    button1 = tk.Button(popup, text="Confirm", command=lambda: confirm_broadcasting(spend_output, popup))
-    button2 = tk.Button(popup, text="Cancel", command=popup.destroy)
+    button1 = ttk.Button(popup, text="Confirm", command=lambda: confirm_broadcasting(spend_output, popup))
+    button2 = ttk.Button(popup, text="Cancel", command=popup.destroy)
     button1.pack()
     button2.pack()
     popup.mainloop()
@@ -206,24 +224,26 @@ wif_input.bind("<<Paste>>", custom_paste)
 address_input.bind("<<Paste>>", custom_paste)
 
 # widgets drawing
-get_new_address_button.grid(row=0, sticky='nesw', padx=(5,5), pady=(10,0))
-wallet_create_messages.grid(row=1, sticky='nesw', padx=(5,5), pady=(10,0))
-nspv_login_text.grid(row=2, sticky='w', pady=(15,0), padx=(5,5))
-wif_input.grid(row=2, sticky='w', pady=(15,0), padx=(160,5))
-nspv_login_button.grid(row=3, sticky='nesw', pady=(15,0), padx=(160,5))
-wallet_interact_messages.grid(row=4, sticky='nesw', padx=(5,5), pady=(10,0))
-current_address_text.grid(row=5, sticky='w', pady=(15,0), padx=(5,5))
-current_balance_text.grid(row=6, sticky='w', pady=(15,0), padx=(5,5))
-refresh_button.grid(row=6, column=0, sticky='w', pady=(15,0), padx=(630,5))
-nspv_logout_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,5))
-logout_timer_text.grid(row=7, sticky='w', pady=(15,0), padx=(5,5))
-nspv_logout_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,5))
-nspv_spend_text.grid(row=8, sticky='w', pady=(15,0), padx=(5,5))
-address_input.grid(row=8, sticky='w', pady=(15,0), padx=(160,5))
-amount_text.grid(row=9, sticky='w', pady=(15,0), padx=(5,5))
-amount_input.grid(row=9, sticky='w', pady=(15,0), padx=(160,5))
-nspv_spend_button.grid(row=10, sticky='nesw', pady=(15,0), padx=(160,5))
+lbl_img.grid(row=0, sticky='e', padx=(10,10), pady=(10,0))
+get_new_address_button.grid(row=0, sticky='nws', padx=(10,10), pady=(10,0))
+wallet_create_messages.grid(row=1, sticky='nesw', padx=(10,10), pady=(10,0))
+nspv_login_text.grid(row=2, sticky='w', pady=(15,0), padx=(10,10))
+wif_input.grid(row=2, sticky='w', pady=(15,0), padx=(160,10))
+nspv_login_button.grid(row=3, sticky='w', pady=(15,0), padx=(160,10))
+wallet_interact_messages.grid(row=4, sticky='nesw', padx=(10,10), pady=(10,0))
+current_address_text.grid(row=5, sticky='w', pady=(15,0), padx=(10,10))
+current_balance_text.grid(row=6, sticky='w', pady=(15,0), padx=(10,10))
+refresh_button.grid(row=6, column=0, sticky='w', pady=(15,0), padx=(630,10))
+nspv_logout_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,10))
+logout_timer_text.grid(row=7, sticky='w', pady=(15,0), padx=(10,10))
+nspv_logout_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,10))
+nspv_spend_text.grid(row=8, sticky='w', pady=(15,0), padx=(10,10))
+address_input.grid(row=8, sticky='w', pady=(15,0), padx=(160,10))
+amount_text.grid(row=9, sticky='w', pady=(15,0), padx=(10,10))
+amount_input.grid(row=9, sticky='w', pady=(15,0), padx=(160,10))
+nspv_spend_button.grid(row=10, sticky='W', pady=(5,10), padx=(160,10))
 
 
 # lets go
+center()
 root.mainloop()

@@ -1,6 +1,6 @@
 # nSPV pywallet
 
-![alt text](https://i.imgur.com/kycYEmj.png)
+![alt text](https://i.imgur.com/VZhNf4r.png)
 
 You can read about nSPV approach [here](https://medium.com/@jameslee777/nspv-a-simple-approach-to-superlight-clients-leveraging-notarizations-75d7ef5a37a9)
 
@@ -10,7 +10,7 @@ nSPV [cli reference](https://medium.com/@jameslee777/nspv-reference-cli-client-c
 
 Python3 required for execution:
 
-*  `sudo apt-get install python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev python3-tk`
+*  `sudo apt-get install python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev python3-tk python3-ttkthemes`
 
 pip packages needed:
 
