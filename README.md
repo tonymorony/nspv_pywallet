@@ -1,6 +1,6 @@
 # nSPV pywallet
 
-![alt text](https://i.imgur.com/kycYEmj.png)
+![alt text](https://i.imgur.com/VZhNf4r.png)
 
 You can read about nSPV approach [here](https://medium.com/@jameslee777/nspv-a-simple-approach-to-superlight-clients-leveraging-notarizations-75d7ef5a37a9)
 
