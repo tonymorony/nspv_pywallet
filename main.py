@@ -76,12 +76,15 @@ class StyleTheme():
         root.set_theme('scidgreen', background=True)
     def arc():
         root.set_theme('arc', background=True)
+    def kroc():
+        root.set_theme('kroc', background=True)
 
 # Menu Bar
 filemenu = tk.Menu(menubar, tearoff=0)
 filemenu.add_command(label='Arc', command=StyleTheme.arc)
 filemenu.add_command(label='Black', command=StyleTheme.black)
 filemenu.add_command(label='Equilux', command=StyleTheme.equilux)
+filemenu.add_command(label='Kroc', command=StyleTheme.kroc)
 filemenu.add_command(label='Radiance', command=StyleTheme.radiance)
 filemenu.add_command(label='Scid-Green', command=StyleTheme.scidGreen)
 menubar.add_cascade(label="Settings", menu=filemenu)
