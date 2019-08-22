@@ -63,10 +63,18 @@ style.map("TButton", background=[('pressed', 'darkslategray4')]) # greenish colo
 img = PhotoImage(file='lib/KMD_Horiz_Dark.png').subsample(3,3)
 lbl_img = ttk.Label(root, image=img)
 
+# Tabbed Notebook
+nb = ttk.Notebook(root)
+tab1 = ttk.Frame(nb)
+tab2 = ttk.Frame(nb)
+nb.add(tab1, text='Interaction Info')
+nb.add(tab2, text='New Wallet Info')
+nb.grid(row=3, column=0, rowspan=3, columnspan=2, sticky='NEWS', padx=(10,10), pady=(5,5))
+
 
 # widgets creation
-wallet_create_messages = tk.Text(root, height=4, width=70, bg='darkslategray4')
-wallet_interact_messages = tk.Text(root, height=7, width=70, bg='darkslategray4')
+wallet_create_messages = tk.Text(tab1, height=5, width=80, padx=15, bg='darkslategray4')
+wallet_interact_messages = tk.Text(tab2, height=5, width=80, padx=15, bg='darkslategray4')
 
 
 get_new_address_button = ttk.Button(root, text="Get new address")
@@ -102,7 +110,6 @@ def get_new_address(event):
                               + "address: " + new_address_info["address"] + "\n" \
                               + "pubkey: " + new_address_info["pubkey"] + "\n"
     wallet_create_messages.replace('1.0', '100.0', new_address_info_string)
-    # wallet_create_messages.grid(row=1, sticky='nesw', padx=(10, 10), pady=(10, 0)) # might hide box until pressed?
 
 
 def nspv_login(event):
@@ -229,19 +236,19 @@ get_new_address_button.grid(row=0, sticky='nws', padx=(10,10), pady=(10,0))
 wallet_create_messages.grid(row=1, sticky='nesw', padx=(10,10), pady=(10,0))
 nspv_login_text.grid(row=2, sticky='w', pady=(15,0), padx=(10,10))
 wif_input.grid(row=2, sticky='w', pady=(15,0), padx=(160,10))
-nspv_login_button.grid(row=3, sticky='w', pady=(15,0), padx=(160,10))
+nspv_login_button.grid(row=2, sticky='e', pady=(15,0), padx=(160,10))
 wallet_interact_messages.grid(row=4, sticky='nesw', padx=(10,10), pady=(10,0))
-current_address_text.grid(row=5, sticky='w', pady=(15,0), padx=(10,10))
-current_balance_text.grid(row=6, sticky='w', pady=(15,0), padx=(10,10))
-refresh_button.grid(row=6, column=0, sticky='w', pady=(15,0), padx=(630,10))
-nspv_logout_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,10))
-logout_timer_text.grid(row=7, sticky='w', pady=(15,0), padx=(10,10))
-nspv_logout_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,10))
-nspv_spend_text.grid(row=8, sticky='w', pady=(15,0), padx=(10,10))
-address_input.grid(row=8, sticky='w', pady=(15,0), padx=(160,10))
-amount_text.grid(row=9, sticky='w', pady=(15,0), padx=(10,10))
-amount_input.grid(row=9, sticky='w', pady=(15,0), padx=(160,10))
-nspv_spend_button.grid(row=10, sticky='W', pady=(5,10), padx=(160,10))
+current_address_text.grid(row=6, sticky='w', pady=(15,0), padx=(10,10))
+current_balance_text.grid(row=7, sticky='w', pady=(15,0), padx=(10,10))
+refresh_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,10))
+nspv_logout_button.grid(row=8, column=0, sticky='w', pady=(15,0), padx=(630,10))
+logout_timer_text.grid(row=8, sticky='w', pady=(15,0), padx=(10,10))
+nspv_logout_button.grid(row=8, column=0, sticky='w', pady=(15,0), padx=(630,10))
+nspv_spend_text.grid(row=9, sticky='w', pady=(15,0), padx=(10,10))
+address_input.grid(row=9, sticky='w', pady=(15,0), padx=(160,10))
+amount_text.grid(row=10, sticky='w', pady=(15,0), padx=(10,10))
+amount_input.grid(row=10, sticky='w', pady=(15,0), padx=(160,10))
+nspv_spend_button.grid(row=11, sticky='W', pady=(5,10), padx=(160,10))
 
 
 # lets go
