@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# komodod -nSPV=1 -ac_reward=100000000  -ac_name=NSPV -ac_supply=10000000000 -ac_cc=2 -addressindex=1 -spentindex=1 -connect=5.9.102.210 &
+# ./komodod -nSPV=1 -addnode=5.9.253.195 &
 
 from tkinter import ttk
 import ttkthemes as tkT
@@ -52,12 +54,41 @@ while True:
         sys.exit()
 
 # main window
-root = tkT.ThemedTk(theme="equilux", background=True)  # overall darker theme
+root = tkT.ThemedTk()
 root.title("nSPV pywallet")
 root.resizable(False, False)
-root.iconbitmap('lib/kmd.ico')  # ICO still showing square edges
+menubar = tk.Menu(root, tearoff=0)
+root.config(menu=menubar)
+
+# Styling and Functions
 style = ttk.Style()
+root.set_theme('equilux', background=True) # default theme
 style.map("TButton", background=[('pressed', 'darkslategray4')]) # greenish color on button press
+
+class StyleTheme():
+    def equilux():
+        root.set_theme('equilux', background=True)
+    def black():
+        root.set_theme('black', background=True)
+    def radiance():
+        root.set_theme('radiance', background=True)
+    def scidGreen():
+        root.set_theme('scidgreen', background=True)
+    def arc():
+        root.set_theme('arc', background=True)
+
+# Menu Bar
+filemenu = tk.Menu(menubar, tearoff=0)
+filemenu.add_command(label='Arc', command=StyleTheme.arc)
+filemenu.add_command(label='Black', command=StyleTheme.black)
+filemenu.add_command(label='Equilux', command=StyleTheme.equilux)
+filemenu.add_command(label='Radiance', command=StyleTheme.radiance)
+filemenu.add_command(label='Scid-Green', command=StyleTheme.scidGreen)
+menubar.add_cascade(label="Settings", menu=filemenu)
+menubar.add_command(label="Exit", command=root.quit)
+
+# KMD Icon
+root.iconbitmap('lib/kmd.ico')  # ICO still showing square edges
 
 # KMD Logo (Could be clearer)
 img = PhotoImage(file='lib/KMD_Horiz_Dark.png').subsample(3,3)
@@ -71,11 +102,9 @@ nb.add(tab1, text='Interaction Info')
 nb.add(tab2, text='New Wallet Info')
 nb.grid(row=3, column=0, rowspan=3, columnspan=2, sticky='NEWS', padx=(10,10), pady=(5,5))
 
-
 # widgets creation
 wallet_create_messages = tk.Text(tab1, height=5, width=80, padx=15, bg='darkslategray4')
 wallet_interact_messages = tk.Text(tab2, height=5, width=80, padx=15, bg='darkslategray4')
-
 
 get_new_address_button = ttk.Button(root, text="Get new address")
 nspv_login_button = ttk.Button(root, text="Login")
@@ -97,8 +126,8 @@ logout_timer_text = ttk.Label(root, text="Logout in: please login first!")
 def center():
     windowWidth = root.winfo_reqwidth()
     windowHeight = root.winfo_reqheight()
-    positionRight = int(root.winfo_screenwidth() / 4 - windowWidth / 4)
-    positionDown = int(root.winfo_screenheight() / 3 - windowHeight / 1)
+    positionRight = int(root.winfo_screenwidth() / 2 - windowWidth / 2)
+    positionDown = int(root.winfo_screenheight() / 2 - windowHeight / 2)
     root.geometry("+{}+{}".format(positionRight, positionDown))
 
 # buttons bindings
