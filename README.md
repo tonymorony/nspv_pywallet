@@ -1,6 +1,6 @@
 # nSPV pywallet
 
-![alt text](https://i.imgur.com/XzCKXVM.png)
+![alt text](https://i.imgur.com/hvwr3GP.png)
 ![alt text](https://i.imgur.com/LDNfDBU.png)
 ![alt text](https://i.imgur.com/yC9D1hk.png)
 ![alt text](https://i.imgur.com/XGnCxgj.png)
