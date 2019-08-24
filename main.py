@@ -2,14 +2,54 @@
 # komodod -nSPV=1 -ac_reward=100000000  -ac_name=NSPV -ac_supply=10000000000 -ac_cc=2 -addressindex=1 -spentindex=1 -connect=5.9.102.210 &
 # ./komodod -nSPV=1 -addnode=5.9.253.195 &
 
+import platform
+import os
 from tkinter import ttk
 import ttkthemes as tkT
 import tkinter as tk
 from tkinter import PhotoImage
 from lib import nspvwallet
-import sys
-import subprocess
-import time
+import sys, subprocess, time, csv
+from slickrpc import Proxy
+
+
+# function to define rpc_connection
+def def_credentials(chain):
+    rpcport = ''
+    operating_system = platform.system()
+    if operating_system == 'Darwin':
+        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
+    elif operating_system == 'Linux':
+        ac_dir = os.environ['HOME'] + '/.komodo'
+    elif operating_system == 'Windows':
+        ac_dir = '%s/komodo/' % os.environ['APPDATA']
+    if chain == 'KMD':
+        coin_config_file = str(ac_dir + '/komodo.conf')
+    else:
+        coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
+    if os.path.isfile(coin_config_file):
+        with open(coin_config_file, 'r') as f:
+            for line in f:
+                l = line.rstrip()
+                if re.search('rpcuser', l):
+                    rpcuser = l.replace('rpcuser=', '')
+                elif re.search('rpcpassword', l):
+                    rpcpassword = l.replace('rpcpassword=', '')
+                elif re.search('rpcport', l):
+                    rpcport = l.replace('rpcport=', '')
+        if len(rpcport) == 0:
+            if chain == 'KMD':
+                rpcport = 7771
+            else:
+                print("rpcport not in conf file, exiting")
+                print("check " + coin_config_file)
+                exit(1)
+
+        return (Proxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport))))
+    else:
+        errmsg = coin_config_file+" does not exist! Please confirm "+str(chain)+" daemon is installed"
+        print(colorize(errmsg, 'red'))
+        exit(1)
 
 
 # daemon initialization
@@ -53,16 +93,21 @@ while True:
         print("daemon for " + sys.argv[1] + " not started and can't start it. Exiting.")
         sys.exit()
 
+
+
 # main window
-root = tkT.ThemedTk()
+# root = tkT.ThemedTk(theme="black", background=True)  # overall darker theme
+root = tkT.ThemedTk()  # overall darker theme
 root.title("nSPV pywallet")
 root.resizable(False, False)
 menubar = tk.Menu(root, tearoff=0)
 root.config(menu=menubar)
+addressBook = {}
+
 
 # Styling and Functions
 style = ttk.Style()
-root.set_theme('equilux', background=True) # default theme
+root.set_theme('equilux', background=True)
 style.map("TButton", background=[('pressed', 'darkslategray4')]) # greenish color on button press
 
 class StyleTheme():
@@ -79,16 +124,6 @@ class StyleTheme():
     def kroc():
         root.set_theme('kroc', background=True)
 
-# Menu Bar
-filemenu = tk.Menu(menubar, tearoff=0)
-filemenu.add_command(label='Arc', command=StyleTheme.arc)
-filemenu.add_command(label='Black', command=StyleTheme.black)
-filemenu.add_command(label='Equilux', command=StyleTheme.equilux)
-filemenu.add_command(label='Kroc', command=StyleTheme.kroc)
-filemenu.add_command(label='Radiance', command=StyleTheme.radiance)
-filemenu.add_command(label='Scid-Green', command=StyleTheme.scidGreen)
-menubar.add_cascade(label="Settings", menu=filemenu)
-menubar.add_command(label="Exit", command=root.quit)
 
 # KMD Icon
 root.iconbitmap('lib/kmd.ico')  # ICO still showing square edges
@@ -101,13 +136,22 @@ lbl_img = ttk.Label(root, image=img)
 nb = ttk.Notebook(root)
 tab1 = ttk.Frame(nb)
 tab2 = ttk.Frame(nb)
+tab3 = ttk.Frame(nb)
+tab4 = ttk.Frame(nb)
 nb.add(tab1, text='Interaction Info')
 nb.add(tab2, text='New Wallet Info')
+nb.add(tab3, text='Transaction History')
+nb.add(tab4, text='Address Book')
+
 nb.grid(row=3, column=0, rowspan=3, columnspan=2, sticky='NEWS', padx=(10,10), pady=(5,5))
+
 
 # widgets creation
 wallet_create_messages = tk.Text(tab1, height=5, width=80, padx=15, bg='darkslategray4')
 wallet_interact_messages = tk.Text(tab2, height=5, width=80, padx=15, bg='darkslategray4')
+transaction_history_messages = tk.Text(tab3, height=5, width=80, padx=15, bg='darkslategray4')
+address_book_messages = tk.Text(tab4, height=5, width=80, padx=15, bg='darkslategray4')
+
 
 get_new_address_button = ttk.Button(root, text="Get new address")
 nspv_login_button = ttk.Button(root, text="Login")
@@ -124,14 +168,6 @@ address_input = ttk.Entry(root, width=50)
 current_address_text = ttk.Label(root, text="Address: please login first!")
 current_balance_text = ttk.Label(root, text="Balance: please login first!")
 logout_timer_text = ttk.Label(root, text="Logout in: please login first!")
-
-# find Center of screen (needs testing on different screens
-def center():
-    windowWidth = root.winfo_reqwidth()
-    windowHeight = root.winfo_reqheight()
-    positionRight = int(root.winfo_screenwidth() / 2 - windowWidth / 2)
-    positionDown = int(root.winfo_screenheight() / 2 - windowHeight / 2)
-    root.geometry("+{}+{}".format(positionRight, positionDown))
 
 # buttons bindings
 def get_new_address(event):
@@ -191,6 +227,8 @@ def refresh(event):
     nspv_getinfo_output = rpc_proxy.nspv_getinfo()
     print("nspv_getinfo")
     print(nspv_getinfo_output)
+    address_book_messages.replace('1.0', '100.0', addressBook)
+    transaction_history_messages.replace('1.0', '100.0', 'Need to add tx history RPC')
     if "wifexpires" in nspv_getinfo_output:
         logout_timer_text["text"] = "Logout in: " + str(rpc_proxy.nspv_getinfo()["wifexpires"]) + " seconds"
         if "error" in listunspent_output and listunspent_output["error"] == "no utxos result":
@@ -221,6 +259,7 @@ def confirm_broadcasting(spend_output, popup_window):
 
 def confirmation_popup(spend_output):
     popup = ttk.Tk()
+    popup.iconbitmap('lib/kmd.ico')
     popup.wm_title("Please confirm your transaction")
     label = ttk.Label(popup, text="You're about to spend: " + str(spend_output["vout"][0]["value"]) + " " + ac_name)
     label2 = ttk.Label(popup, text="Destination address: " + str(spend_output["vout"][0]["scriptPubKey"]["addresses"][0]))
@@ -252,8 +291,88 @@ def custom_paste(event):
     event.widget.insert("insert", event.widget.clipboard_get())
     return "break"
 
+def transaction_info(event):
+    message = 'Need to get tx history from RPC'
+    transaction_history_messages.replace('1.0', '100.0', message)
 
-get_new_address_button.bind('<Button-1>', get_new_address)
+# Address Book
+def address_book_popup():
+    popup = tkT.ThemedTk()
+    popup.set_theme('{}'.format(style.theme_use()), background=True)
+    popup.iconbitmap('lib/kmd.ico')
+    popup.wm_title("Edit Your Address Book")
+
+    label = ttk.Label(popup, text="Edit your Address Book by adding or deleting a contact below")
+    label.pack(side="top", fill="x", pady=10)
+    book = tk.Text(popup, height=5, width=80, padx=15, bg='darkslategray4')
+    book.replace('1.0', '100.0', addressBook)
+    book.pack()
+
+    label2 = ttk.Label(popup, text="Contact Name: ")
+    label2.pack()
+    name = ttk.Entry(popup, width=50)
+    name.pack()
+    label3 = ttk.Label(popup, text="Contact Address: ")
+    label3.pack()
+    address = ttk.Entry(popup, width=50)
+    address.pack()
+
+    def reload_book():
+        book.replace('1.0', '100.0', addressBook)
+
+    button1 = ttk.Button(popup, text="Add Contact", command=lambda: add_address_book(name.get(), address.get()))
+    button2 = ttk.Button(popup, text="Delete Contact", command=lambda: delete_address_book_entry(name.get()))
+    button3 = ttk.Button(popup, text="Refresh", command=reload_book)
+    button4 = ttk.Button(popup, text="Exit", command=popup.destroy)
+    button1.pack(anchor='n')
+    button2.pack(anchor='n')
+    button3.pack(anchor='n')
+    button4.pack(anchor='se')
+
+    popup.mainloop()
+
+def load_address_book():
+    try:
+        with open('lib/address_book.csv', 'r') as csvAddresses:
+            read = csv.reader(csvAddresses)
+            for row in read:
+                new = list(row)
+                name = str(new[0])
+                address = str(new[1])
+                addressBook[name] = address
+                address_book_messages.replace('1.0', '100.0', addressBook)
+    except:
+        print("Could not open address book")
+
+def add_address_book(name, address):
+    load_address_book()
+    if name not in addressBook:
+        add_name = str(name)
+        add_address = str(address)
+        addressBook[add_name] = add_address
+        save_address_book(addressBook)
+    else:
+        print('{} is already in address book, please use different name'.format(name))
+
+def save_address_book(addressBook):
+    with open('lib/address_book.csv', 'w') as f:
+        writer = csv.writer(f, delimiter=',', lineterminator='\n')
+        for name in addressBook.items():
+            entry = [name[0], name[1]]
+            writer.writerow(entry)
+            load_address_book()  # reloads address book
+
+def delete_address_book_entry(name):
+    if name in addressBook:
+        delete_name = str(name)
+        addressBook.pop(delete_name)
+        save_address_book(addressBook)
+    else:
+        print('{} was not found in address book'.format(name))
+
+
+# Button bindings
+# get_new_address_button.bind('<Button-1>', get_new_address)
 nspv_login_button.bind('<Button-1>', nspv_login)
 nspv_spend_button.bind('<Button-1>', nspv_send_tx)
 nspv_logout_button.bind('<Button-1>', nspv_logout)
@@ -262,14 +381,16 @@ amount_input.bind("<<Paste>>", custom_paste)
 wif_input.bind("<<Paste>>", custom_paste)
 address_input.bind("<<Paste>>", custom_paste)
 
+
 # widgets drawing
 lbl_img.grid(row=0, sticky='e', padx=(10,10), pady=(10,0))
-get_new_address_button.grid(row=0, sticky='nws', padx=(10,10), pady=(10,0))
 wallet_create_messages.grid(row=1, sticky='nesw', padx=(10,10), pady=(10,0))
 nspv_login_text.grid(row=2, sticky='w', pady=(15,0), padx=(10,10))
 wif_input.grid(row=2, sticky='w', pady=(15,0), padx=(160,10))
 nspv_login_button.grid(row=2, sticky='e', pady=(15,0), padx=(160,10))
 wallet_interact_messages.grid(row=4, sticky='nesw', padx=(10,10), pady=(10,0))
+transaction_history_messages.grid(row=4, sticky='nesw', padx=(10,10), pady=(10,0))
+address_book_messages.grid(row=4, sticky='nesw', padx=(10,10), pady=(10,0))
 current_address_text.grid(row=6, sticky='w', pady=(15,0), padx=(10,10))
 current_balance_text.grid(row=7, sticky='w', pady=(15,0), padx=(10,10))
 refresh_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,10))
@@ -282,7 +403,23 @@ amount_text.grid(row=10, sticky='w', pady=(15,0), padx=(10,10))
 amount_input.grid(row=10, sticky='w', pady=(15,0), padx=(160,10))
 nspv_spend_button.grid(row=11, sticky='W', pady=(5,10), padx=(160,10))
 
+# Menu Bar
+filemenu = tk.Menu(menubar, tearoff=0)
+settingsmenu = tk.Menu(menubar, tearoff=0)
+filemenu.add_command(label='Arc', command=StyleTheme.arc)
+filemenu.add_command(label='Black', command=StyleTheme.black)
+filemenu.add_command(label='Equilux', command=StyleTheme.equilux)
+filemenu.add_command(label='Kroc', command=StyleTheme.kroc)
+filemenu.add_command(label='Radiance', command=StyleTheme.radiance)
+filemenu.add_command(label='Scid-Green', command=StyleTheme.scidGreen)
+settingsmenu.add_command(label='Get New Address', command=get_new_address)
+settingsmenu.add_command(label='Edit Address Book', command=address_book_popup)
+menubar.add_cascade(label="Settings", menu=settingsmenu)
+menubar.add_cascade(label="Themes", menu=filemenu)
+menubar.add_command(label="Exit", command=root.quit)
+
 
 # lets go
-center()
+root.eval('tk::PlaceWindow %s center' % root.winfo_pathname(root.winfo_id())) # center window
+load_address_book() # loads address book from CSV
 root.mainloop()
