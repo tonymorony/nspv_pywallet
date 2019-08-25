@@ -11,6 +11,7 @@ from lib import nspvwallet
 import sys, subprocess, time, csv
 from slickrpc import Proxy
 import requests
+from fake_useragent import UserAgent()
 
 # daemon initialization
 try:
@@ -58,6 +59,7 @@ root = tkT.ThemedTk()
 root.title("Komodo nSPV pywallet")
 root.resizable(False, False)
 addressBook = {}
+ua = UserAgent()
 
 
 # Styling and Functions
@@ -387,9 +389,10 @@ def main_address_book():
 
 # Price information
 def get_price():
+    useragent = {'User-Agent':ua.random}
     print('updating prices...')
     url = 'https://api.coinpaprika.com/v1/tickers/kmd-komodo'
-    response = requests.get(url)
+    response = requests.get(url, headers=useragent)
     if response.status_code == 200:
         data = response.json()
         price = data['quotes']['USD']['price']
