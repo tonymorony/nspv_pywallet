@@ -10,6 +10,7 @@ from tkinter import PhotoImage
 from lib import nspvwallet
 import sys, subprocess, time, csv
 from slickrpc import Proxy
+import requests
 
 # daemon initialization
 try:
@@ -54,28 +55,33 @@ while True:
 
 # main window
 root = tkT.ThemedTk()
-root.title("nSPV pywallet")
+root.title("Komodo nSPV pywallet")
 root.resizable(False, False)
 addressBook = {}
 
 
 # Styling and Functions
 style = ttk.Style()
-style.map("TButton", background=[('pressed', 'darkslategray4')]) # greenish color on button press
 
 class StyleTheme():
     def equilux():
         root.set_theme('equilux', background=True)
+        style.map("TButton", background=[('pressed', 'darkslategray4')])
     def black():
         root.set_theme('black', background=True)
+        style.map("TButton", background=[('pressed', 'darkslategray4')])
     def radiance():
         root.set_theme('radiance', background=True)
+        style.map("TButton", background=[('pressed', 'orange red')])
     def scidGreen():
         root.set_theme('scidgreen', background=True)
+        style.map("TButton", background=[('pressed', 'green2')])
     def arc():
         root.set_theme('arc', background=True)
+        style.map("TButton", background=[('pressed', 'purple1')])
     def kroc():
         root.set_theme('kroc', background=True)
+        style.map("TButton", background=[('pressed', 'gray15')])
 
 def save_style():
     style_choice = style.theme_use()
@@ -87,13 +93,14 @@ def check_style():
         with open('lib/style_choice.txt', 'r') as text_file:
             last_style = text_file.read()
             root.set_theme(last_style, background=True)
+            style.map("TButton", background=[('pressed', 'darkslategray4')])
     except:
         root.set_theme('equilux', background=True)
 
 # KMD Icon
-root.iconbitmap('lib/kmd.ico')  # ICO still showing square edges
+root.iconbitmap('lib/kmd.ico')
 
-# KMD Logo (Could be clearer)
+# KMD Logo
 img = PhotoImage(file='lib/KMD_Horiz_Dark.png').subsample(3,3)
 lbl_img = ttk.Label(root, image=img)
 
@@ -111,15 +118,20 @@ nb.grid(row=3, column=0, rowspan=3, columnspan=2, sticky='NEWS', padx=(10,10), p
 
 
 # widgets creation
-wallet_interact_messages = tk.Text(tab1, height=8, width=85, bg='darkslategray4')
-wallet_create_messages = tk.Text(tab2, height=8, width=85, bg='darkslategray4')
-transaction_history_messages = tk.Text(tab3, height=8, width=85, bg='darkslategray4')
+wallet_interact_messages = tk.Text(tab1, height=8, width=85, bg='gray22')
+wallet_create_messages = tk.Text(tab2, height=8, width=85, bg='gray22')
+transaction_history_messages = tk.Text(tab3, height=8, width=85, bg='gray22')
 address_book_messages = ttk.Treeview(tab4, columns=('Name', 'Address'), show='headings', height=5)
 
 get_new_address_button = ttk.Button(root, text="Get new address")
 nspv_login_button = ttk.Button(root, text="Login")
 nspv_logout_button = ttk.Button(root, text="Logout")
 refresh_button = ttk.Button(root, text="Refresh")
+
+# prices
+price_text = ttk.Label(root, width=50)
+price_change_text = ttk.Label(root, width=50)
+
 
 wif_input = ttk.Entry(root, width=50)
 nspv_login_text = ttk.Label(root, text="Input WIF to login:")
@@ -130,6 +142,7 @@ nspv_spend_button = ttk.Button(root, text="Send")
 address_input = ttk.Entry(root, width=50)
 current_address_text = ttk.Label(root, text="Address: please login first!")
 current_balance_text = ttk.Label(root, text="Balance: please login first!")
+current_balance_USD = ttk.Label(root, text="")
 logout_timer_text = ttk.Label(root, text="Logout in: please login first!")
 
 # buttons bindings
@@ -183,6 +196,7 @@ def nspv_send_tx(event):
 
 
 def refresh(event):
+    get_price()
     current_address = current_address_text["text"][-34:]
     listunspent_output = rpc_proxy.nspv_listunspent(current_address)
     print("nspv_listunspent " + current_address)
@@ -261,6 +275,8 @@ def transaction_info(event):
 # Address Book
 def address_book_popup():
     popup = tkT.ThemedTk()
+    popup_style = ttk.Style()
+    popup_style.map("TButton", background=[('pressed', 'purple1')])
     popup.set_theme('{}'.format(style.theme_use()), background=True)
     popup.iconbitmap('lib/kmd.ico')
     popup.wm_title("Edit Your Address Book")
@@ -369,6 +385,25 @@ def main_address_book():
     for name in addressBook.items():
         address_book_messages.insert('', 'end', values=[(name[0]), (name[1])])
 
+# Price information
+def get_price():
+    print('updating prices...')
+    url = 'https://api.coinpaprika.com/v1/tickers/kmd-komodo'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        price = data['quotes']['USD']['price']
+        change = data['quotes']['USD']['percent_change_24h']
+        price_text.configure(text="Current Price: ${}".format(price))
+        price_change_text.configure(text="Change in past 24/hrs: {}%".format(change))
+        login_info = rpc_proxy.nspv_login(wif_input.get()) # not sure this is still needed to get unspent output
+        listunspent_output = rpc_proxy.nspv_listunspent(login_info["address"])
+        balance = listunspent_output['balance']
+        balance_USD = round(balance * price, 2)
+        current_balance_USD.configure(text="Balance Value: ${}".format(str(balance_USD)))
+    else:
+        print('price status code {}'.format(response.status_code))
+    root.after(60000, get_price)
 
 # exit button on toolbar logs out then closes app
 def safe_close():
@@ -389,6 +424,8 @@ address_book_messages.bind('<ButtonRelease-1>', select_item_book)
 
 # widgets drawing
 lbl_img.grid(row=0, sticky='e', padx=(10,10), pady=(10,0))
+price_text.grid(row=0, sticky='w', padx=(10,10), pady=(0,0))
+price_change_text.grid(row=1, sticky='w', padx=(10,10), pady=(0,10))
 wallet_create_messages.grid(row=1, sticky='nesw', padx=(10,10), pady=(10,0))
 nspv_login_text.grid(row=2, sticky='w', pady=(15,0), padx=(10,10))
 wif_input.grid(row=2, sticky='w', pady=(15,0), padx=(160,10))
@@ -398,6 +435,7 @@ transaction_history_messages.grid(row=4, sticky='nesw', padx=(10,10), pady=(10,0
 address_book_messages.grid(row=4, sticky='nesw', padx=(10,10), pady=(10,0))
 current_address_text.grid(row=6, sticky='w', pady=(15,0), padx=(10,10))
 current_balance_text.grid(row=7, sticky='w', pady=(15,0), padx=(10,10))
+current_balance_USD.grid(row=7, sticky='e', pady=(15,0), padx=(5,400))
 refresh_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,10))
 nspv_logout_button.grid(row=8, column=0, sticky='w', pady=(15,0), padx=(630,10))
 logout_timer_text.grid(row=8, sticky='w', pady=(15,0), padx=(10,10))
@@ -428,6 +466,7 @@ menubar.add_command(label="Exit", command=safe_close)
 
 # lets go
 root.eval('tk::PlaceWindow %s center' % root.winfo_pathname(root.winfo_id())) # center window
-check_style()
+check_style()  # loads previous style theme
 load_address_book() # loads address book from CSV
+get_price()  # gets current price info
 root.mainloop()
