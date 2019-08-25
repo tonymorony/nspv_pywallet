@@ -15,11 +15,11 @@ nSPV [cli reference](https://medium.com/@jameslee777/nspv-reference-cli-client-c
 
 Python3 required for execution:
 
-*  `sudo apt-get install python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev python3-tk python3-ttkthemes`
+*  `sudo apt-get install python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev python3-tk`
 
 pip packages needed:
 
-* `pip3 install setuptools wheel slick-bitcoinrpc`
+* `pip3 install setuptools wheel slick-bitcoinrpc fake-useragent ttkthemes`
 
 ## Starting:  
 
