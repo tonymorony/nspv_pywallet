@@ -60,6 +60,7 @@ root.title("Komodo nSPV pywallet")
 root.resizable(False, False)
 addressBook = {}
 ua = UserAgent()
+default_price_request = 0
 
 # Styling and Functions
 style = ttk.Style()
@@ -388,30 +389,45 @@ def main_address_book():
 
 # Price information
 def get_price(fiat):
-    useragent = {'User-Agent':ua.random}
-    print('updating prices...')
-    url = 'https://api.coinpaprika.com/v1/tickers/kmd-komodo?quotes={}'.format(fiat)
-    response = requests.get(url, headers=useragent)
-    if response.status_code == 200:
-        data = response.json()
-        login_info = rpc_proxy.nspv_login(wif_input.get())
-        listunspent_output = rpc_proxy.nspv_listunspent(login_info["address"])
-        balance = listunspent_output['balance']
-        if fiat == 'BTC':
-            price = format(data['quotes'][fiat]['price'], '.8f')
-            balance_fiat = format(balance * data['quotes'][fiat]['price'], '.8f')
+    if default_price_request == 0:
+        useragent = {'User-Agent':ua.random}
+        print('updating prices...')
+        url = 'https://api.coinpaprika.com/v1/tickers/kmd-komodo?quotes={}'.format(fiat)
+        response = requests.get(url, headers=useragent)
+        if response.status_code == 200:
+            data = response.json()
+            login_info = rpc_proxy.nspv_login(wif_input.get())
+            listunspent_output = rpc_proxy.nspv_listunspent(login_info["address"])
+            balance = listunspent_output['balance']
+            if fiat == 'BTC':
+                price = format(data['quotes'][fiat]['price'], '.8f')
+                balance_fiat = format(10 * data['quotes'][fiat]['price'], '.8f') ### Change 10 to balance ###
+            else:
+                price = round(data['quotes'][fiat]['price'], 2)
+                balance_fiat = round(10 * price, 2) ### Change 10 to balance ###
+            change = data['quotes'][fiat]['percent_change_24h']
+            price_text.configure(text="Current Price: {0} {1} {2}".format(currency_symbols[fiat], price, fiat))
+            price_change_text.configure(text="Change in past 24/hrs: {}%".format(change))
+            current_balance_fiat.configure(text="Balance Value: {0} {1} {2}".format(currency_symbols[fiat], str(balance_fiat), fiat))
         else:
-            price = round(data['quotes'][fiat]['price'], 2)
-            balance_fiat = round(balance * price, 2)
-        change = data['quotes'][fiat]['percent_change_24h']
-        price_text.configure(text="Current Price: {0} {1} {2}".format(currency_symbols[fiat], price, fiat))
-        price_change_text.configure(text="Change in past 24/hrs: {}%".format(change))
-        current_balance_fiat.configure(text="Balance Value: {0} {1} {2}".format(currency_symbols[fiat], str(balance_fiat), fiat))
+            print('price status code {}'.format(response.status_code))
+        root.after(300000, get_price) # refresh every 5 minutes, 300000 ms
     else:
-        print('price status code {}'.format(response.status_code))
-    root.after(300000, get_price) # refresh every 5 minutes, 300000 ms
+        price_text.configure(text="Prices are Disabled")
+        price_change_text.configure(text="24hr Price Changes are Disabled")
+        current_balance_fiat.configure(text="Prices are Disabled")
 
 currency_symbols = {'BTC':'₿','USD':'$','EUR':'€','KRW':'₩','GBP':'£','CAD':'$','JPY':'¥','RUB':'₽','AUD':'$','CNY':'¥','INR':'₹'}
+
+def disable_prices():
+    global default_price_request
+    if default_price_request == 1:
+        default_price_request = 0
+        print('price enabled')
+        get_price('USD')
+    else:
+        default_price_request = 1
+        print('price disabled')
 
 # exit button on toolbar logs out then closes app
 def safe_close():
@@ -469,6 +485,7 @@ filemenu.add_command(label='Scid-Green', command=StyleTheme.scidGreen)
 settingsmenu = tk.Menu(menubar, tearoff=0)
 settingsmenu.add_command(label='Get New Address', command=get_new_address)
 settingsmenu.add_command(label='Edit Address Book', command=address_book_popup)
+settingsmenu.add_command(label='Disable/Enable Prices', command=disable_prices)
 
 menubar.add_cascade(label="Settings", menu=settingsmenu)
 menubar.add_cascade(label="Themes", menu=filemenu)
