@@ -11,7 +11,7 @@ from lib import nspvwallet
 import sys, subprocess, time, csv
 from slickrpc import Proxy
 import requests
-from fake_useragent import UserAgent()
+from fake_useragent import UserAgent
 
 # daemon initialization
 try:
@@ -60,7 +60,6 @@ root.title("Komodo nSPV pywallet")
 root.resizable(False, False)
 addressBook = {}
 ua = UserAgent()
-
 
 # Styling and Functions
 style = ttk.Style()
@@ -144,7 +143,7 @@ nspv_spend_button = ttk.Button(root, text="Send")
 address_input = ttk.Entry(root, width=50)
 current_address_text = ttk.Label(root, text="Address: please login first!")
 current_balance_text = ttk.Label(root, text="Balance: please login first!")
-current_balance_USD = ttk.Label(root, text="")
+current_balance_fiat = ttk.Label(root, text="")
 logout_timer_text = ttk.Label(root, text="Logout in: please login first!")
 
 # buttons bindings
@@ -198,7 +197,7 @@ def nspv_send_tx(event):
 
 
 def refresh(event):
-    get_price()
+    get_price(price_text.cget('text')[-3:])
     current_address = current_address_text["text"][-34:]
     listunspent_output = rpc_proxy.nspv_listunspent(current_address)
     print("nspv_listunspent " + current_address)
@@ -388,25 +387,31 @@ def main_address_book():
         address_book_messages.insert('', 'end', values=[(name[0]), (name[1])])
 
 # Price information
-def get_price():
+def get_price(fiat):
     useragent = {'User-Agent':ua.random}
     print('updating prices...')
-    url = 'https://api.coinpaprika.com/v1/tickers/kmd-komodo'
+    url = 'https://api.coinpaprika.com/v1/tickers/kmd-komodo?quotes={}'.format(fiat)
     response = requests.get(url, headers=useragent)
     if response.status_code == 200:
         data = response.json()
-        price = data['quotes']['USD']['price']
-        change = data['quotes']['USD']['percent_change_24h']
-        price_text.configure(text="Current Price: ${}".format(price))
-        price_change_text.configure(text="Change in past 24/hrs: {}%".format(change))
-        login_info = rpc_proxy.nspv_login(wif_input.get()) # not sure this is still needed to get unspent output
+        login_info = rpc_proxy.nspv_login(wif_input.get())
         listunspent_output = rpc_proxy.nspv_listunspent(login_info["address"])
         balance = listunspent_output['balance']
-        balance_USD = round(balance * price, 2)
-        current_balance_USD.configure(text="Balance Value: ${}".format(str(balance_USD)))
+        if fiat == 'BTC':
+            price = format(data['quotes'][fiat]['price'], '.8f')
+            balance_fiat = format(balance * data['quotes'][fiat]['price'], '.8f')
+        else:
+            price = round(data['quotes'][fiat]['price'], 2)
+            balance_fiat = round(balance * price, 2)
+        change = data['quotes'][fiat]['percent_change_24h']
+        price_text.configure(text="Current Price: {0} {1} {2}".format(currency_symbols[fiat], price, fiat))
+        price_change_text.configure(text="Change in past 24/hrs: {}%".format(change))
+        current_balance_fiat.configure(text="Balance Value: {0} {1} {2}".format(currency_symbols[fiat], str(balance_fiat), fiat))
     else:
         print('price status code {}'.format(response.status_code))
-    root.after(60000, get_price)
+    root.after(300000, get_price) # refresh every 5 minutes, 300000 ms
+
+currency_symbols = {'BTC':'₿','USD':'$','EUR':'€','KRW':'₩','GBP':'£','CAD':'$','JPY':'¥','RUB':'₽','AUD':'$','CNY':'¥','INR':'₹'}
 
 # exit button on toolbar logs out then closes app
 def safe_close():
@@ -438,7 +443,7 @@ transaction_history_messages.grid(row=4, sticky='nesw', padx=(10,10), pady=(10,0
 address_book_messages.grid(row=4, sticky='nesw', padx=(10,10), pady=(10,0))
 current_address_text.grid(row=6, sticky='w', pady=(15,0), padx=(10,10))
 current_balance_text.grid(row=7, sticky='w', pady=(15,0), padx=(10,10))
-current_balance_USD.grid(row=7, sticky='e', pady=(15,0), padx=(5,400))
+current_balance_fiat.grid(row=7, sticky='e', pady=(15,0), padx=(5,400))
 refresh_button.grid(row=7, column=0, sticky='w', pady=(15,0), padx=(630,10))
 nspv_logout_button.grid(row=8, column=0, sticky='w', pady=(15,0), padx=(630,10))
 logout_timer_text.grid(row=8, sticky='w', pady=(15,0), padx=(10,10))
@@ -452,24 +457,41 @@ nspv_spend_button.grid(row=11, sticky='W', pady=(5,10), padx=(160,10))
 # Menu Bar
 menubar = tk.Menu(root, tearoff=0)
 root.config(menu=menubar)
+
 filemenu = tk.Menu(menubar, tearoff=0)
-settingsmenu = tk.Menu(menubar, tearoff=0)
 filemenu.add_command(label='Arc', command=StyleTheme.arc)
 filemenu.add_command(label='Black', command=StyleTheme.black)
 filemenu.add_command(label='Equilux', command=StyleTheme.equilux)
 filemenu.add_command(label='Kroc', command=StyleTheme.kroc)
 filemenu.add_command(label='Radiance', command=StyleTheme.radiance)
 filemenu.add_command(label='Scid-Green', command=StyleTheme.scidGreen)
+
+settingsmenu = tk.Menu(menubar, tearoff=0)
 settingsmenu.add_command(label='Get New Address', command=get_new_address)
 settingsmenu.add_command(label='Edit Address Book', command=address_book_popup)
+
 menubar.add_cascade(label="Settings", menu=settingsmenu)
 menubar.add_cascade(label="Themes", menu=filemenu)
 menubar.add_command(label="Exit", command=safe_close)
+
+fiatmenu = tk.Menu(menubar, tearoff=0)
+settingsmenu.add_cascade(label='Currency Choice', menu=fiatmenu)
+fiatmenu.add_command(label='AUD', command=lambda: get_price('AUD'))
+fiatmenu.add_command(label='BTC', command=lambda: get_price('BTC'))
+fiatmenu.add_command(label='CAD', command=lambda: get_price('CAD'))
+fiatmenu.add_command(label='CNY', command=lambda: get_price('CNY'))
+fiatmenu.add_command(label='EUR', command=lambda: get_price('EUR'))
+fiatmenu.add_command(label='GBP', command=lambda: get_price('GBP'))
+fiatmenu.add_command(label='INR', command=lambda: get_price('INR'))
+fiatmenu.add_command(label='JPY', command=lambda: get_price('JPY'))
+fiatmenu.add_command(label='KRW', command=lambda: get_price('KRW'))
+fiatmenu.add_command(label='RUB', command=lambda: get_price('RUB'))
+fiatmenu.add_command(label='USD', command=lambda: get_price('USD'))
 
 
 # lets go
 root.eval('tk::PlaceWindow %s center' % root.winfo_pathname(root.winfo_id())) # center window
 check_style()  # loads previous style theme
-load_address_book() # loads address book from CSV
-get_price()  # gets current price info
+root.after(1000, load_address_book) # loads address book from CSV
+root.after(1000, lambda: get_price('USD'))  # Waits till after GUI loads and gets current price info
 root.mainloop()
