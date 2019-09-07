@@ -1,6 +1,11 @@
 # nSPV pywallet
 
-![alt text](https://i.imgur.com/VZhNf4r.png)
+![alt text](https://i.imgur.com/hvwr3GP.png)
+![alt text](https://i.imgur.com/LDNfDBU.png)
+![alt text](https://i.imgur.com/yC9D1hk.png)
+![alt text](https://i.imgur.com/XGnCxgj.png)
+![alt text](https://i.imgur.com/OUX5nEB.png)
+![alt text](https://i.imgur.com/21oIHM9.png)
 
 You can read about nSPV approach [here](https://medium.com/@jameslee777/nspv-a-simple-approach-to-superlight-clients-leveraging-notarizations-75d7ef5a37a9)
 
@@ -10,11 +15,11 @@ nSPV [cli reference](https://medium.com/@jameslee777/nspv-reference-cli-client-c
 
 Python3 required for execution:
 
-*  `sudo apt-get install python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev python3-tk python3-ttkthemes`
+*  `sudo apt-get install python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev python3-tk`
 
 pip packages needed:
 
-* `pip3 install setuptools wheel slick-bitcoinrpc`
+* `pip3 install setuptools wheel slick-bitcoinrpc fake-useragent ttkthemes`
 
 ## Starting:  
 
@@ -26,3 +31,6 @@ pip packages needed:
 If daemon wasn't started - wallet will start it for you. If daemon was started as nSPV superlight client - wallet should start fine as well.
 
 Otherwise you'll need to stop daemon first then start wallet.
+
+## Disclosure
+* Current build makes price requests to Coinpaprika by default every 5 minutes, when Refresh button is pressed, or fiat currency is changed. This will display your IP address to Coinpaprika during this request, if you would like, you can disable prices in the settings menu by simply clicking 'Disable/Enable prices' and renable it the same way. I am working on a solution to mask your IP address.
