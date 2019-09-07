@@ -2,10 +2,7 @@
 
 ![alt text](https://i.imgur.com/hvwr3GP.png)
 ![alt text](https://i.imgur.com/LDNfDBU.png)
-![alt text](https://i.imgur.com/yC9D1hk.png)
-![alt text](https://i.imgur.com/XGnCxgj.png)
-![alt text](https://i.imgur.com/OUX5nEB.png)
-![alt text](https://i.imgur.com/21oIHM9.png)
+
 
 You can read about nSPV approach [here](https://medium.com/@jameslee777/nspv-a-simple-approach-to-superlight-clients-leveraging-notarizations-75d7ef5a37a9)
 
