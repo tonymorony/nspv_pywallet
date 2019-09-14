@@ -13,12 +13,13 @@ from slickrpc import Proxy
 import requests
 from fake_useragent import UserAgent
 
-ico = "lib/kmd.ico"
-pngLogo = 'lib/KMD_Horiz_Dark.png'
-coin = 'KMD-komodo'
-appTitle = "Komodo nSPV pywallet"
-tor_logo = 'lib/tor.png'
-
+# Configures what coin the wallet Design is for
+with open('lib/wallet_build.txt') as json_file:
+    data = json.load(json_file)
+    ico = data['Ico_logo'] # ex: "lib/kmd.ico"
+    pngLogo = data['Main_logo'] # ex:  'lib/KMD_Horiz_Dark.png'
+    coin = data['Coin'] # ex:  'KMD-komodo'
+    appTitle = data['App_title'] # ex: "Komodo nSPV pywallet"
 
 # daemon initialization
 try:
