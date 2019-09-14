@@ -35,4 +35,10 @@ Otherwise you'll need to stop daemon first then start wallet.
 ## Disclosure
 * Current build has price requests disabled by default. You can enable prices through the settings menu and the wallet will save your most previous settings when properly shutdown. You can also enable Tor so that price requests will be routed through Tor while using a randomly generated user agent. The wallet makes price requests to Coinpaprika every 5 minutes, when Refresh button is pressed, or fiat currency is changed. This will display your IP address to Coinpaprika during this request, enabling Tor will not display your IP address to Coinpaprika, but will instead route your request through Tor.
 
-Tor port 9150 is used by default, but this can be changed in the settings menu depending on what port you are using. Tor must be running already for this to work, the wallet will not start tor for you. To learn what Port Tor browser is using, in the browser go to the three lines (open menu), click options, scroll to the bottom to "Network Proxy" and click settings, you should see the port number for SOCKS Host. You can set the wallet to use this port number.
+* Tor port 9150 is used by default, but this can be changed in the settings menu depending on what port you are using. Tor must be running already for this to work, the wallet will not start tor for you. To learn what Port Tor browser is using, in the browser go to the three lines (open menu), click options, scroll to the bottom to "Network Proxy" and click settings, you should see the port number for SOCKS Host. You can set the wallet to use this port number.
+
+If you would like to Donate please send to one of these addresses:
+KMD - RHFvWs5GM92wuSZSXKey67CYHRcwytFmfe
+BTC - 15eWSwNgkXkTdQfYMUPaSd81FbhVgGeFsv
+ARRR - zs1verrcrg8q3leh6x76p5equwj453j0ts7eqvc02l3lmkcnf4nuwu5w53jpaayh7uvsx4pu0z0fxt
+HUSH - RHFvWs5GM92wuSZSXKey67CYHRcwytFmfe
