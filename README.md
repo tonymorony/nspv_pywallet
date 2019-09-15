@@ -19,14 +19,15 @@ Python3 required for execution:
 
 pip packages needed:
 
-* `pip3 install setuptools wheel slick-bitcoinrpc fake-useragent ttkthemes`
+* `pip3 install setuptools wheel slick-bitcoinrpc fake-useragent ttkthemes requests ast`
 
 ## Starting:  
 
-* Put wallet files to same folder with komodod or put komodod to the same folder with wallet (komodod should support nSPV)
+* Put wallet files to same folder with komodod or libnspv executable (komodod version should support nSPV mode)
+* 
 
-* Specify chain ticker as cli arg on start. For now KMD and ILN supported: 
-`python3 main.py KMD` or `python3 main.py ILN`
+* Specify executable to be used(komodod or nspv) and chain ticker as cli arg on start. For now KMD and ILN chains are supported:
+`python3 main.py nspv KMD` or `python3 main.py komodod ILN`
 
 If daemon wasn't started - wallet will start it for you. If daemon was started as nSPV superlight client - wallet should start fine as well.
 
