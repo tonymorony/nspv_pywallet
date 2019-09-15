@@ -1,5 +1,6 @@
-{"App_title": "Komodo nSPV pywallet", 
+{
+"App_title": "Komodo nSPV pywallet",
 "Main_logo": "lib/KMD_Horiz_Dark.png", 
 "Coin": "KMD-komodo", 
 "Ico_logo": "lib/kmd.ico", 
-"Main_logo": "lib/KMD_Horiz_Dark.png"}
+}

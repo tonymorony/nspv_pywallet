@@ -2,14 +2,18 @@
 # komodod -nSPV=1 -ac_reward=100000000  -ac_name=NSPV -ac_supply=10000000000 -ac_cc=2 -addressindex=1 -spentindex=1 -connect=5.9.102.210 &
 # ./komodod -nSPV=1 -addnode=5.9.253.195 &
 
-import platform, os
+# import platform
+# import os
 from tkinter import ttk
 import ttkthemes as tkT
 import tkinter as tk
 from tkinter import PhotoImage
 from lib import nspvwallet
-import sys, subprocess, time, csv, json
-from slickrpc import Proxy
+import sys
+import subprocess
+import time
+import csv
+import json
 import requests
 from fake_useragent import UserAgent
 
@@ -46,7 +50,7 @@ while True:
                 sys.exit()
         except Exception as e:
             print(e)
-            print(sys.argv[1] +" daemon is not started! Lets try to start")
+            print(sys.argv[1] + " daemon is not started! Lets try to start")
             # TODO: have to parse json with params
             if sys.argv[1] == "KMD":
                 subprocess.call(['./komodod', '-nSPV=1', '-connect=23.254.165.16', '-listen=0', '-daemon'])
@@ -74,25 +78,31 @@ currency_symbols = {'BTC':'₿','USD':'$','EUR':'€','KRW':'₩','GBP':'£','CA
 style = ttk.Style()
 
 
-class StyleTheme():
-    def equilux():
+class StyleTheme:
+    def equilux(self):
         root.set_theme('equilux', background=True)
         style.map("TButton", background=[('pressed', 'darkslategray4')])
-    def black():
+
+    def black(self):
         root.set_theme('black', background=True)
         style.map("TButton", background=[('pressed', 'darkslategray4')])
-    def radiance():
+
+    def radiance(self):
         root.set_theme('radiance', background=True)
         style.map("TButton", background=[('pressed', 'orange red')])
-    def scidGreen():
+
+    def scidGreen(self):
         root.set_theme('scidgreen', background=True)
         style.map("TButton", background=[('pressed', 'green2')])
-    def arc():
+
+    def arc(self):
         root.set_theme('arc', background=True)
         style.map("TButton", background=[('pressed', 'purple1')])
-    def kroc():
+
+    def kroc(self):
         root.set_theme('kroc', background=True)
         style.map("TButton", background=[('pressed', 'gray15')])
+
 
 def save_style():
     style_pack = {}
@@ -103,6 +113,7 @@ def save_style():
     style_pack['default_currency'] = default_currency
     with open('lib/style_choice.txt', 'w') as text_file:
         json.dump(style_pack, text_file)
+
 
 def check_style():
     global default_tor, default_tor_port, default_price_request, default_currency
@@ -127,6 +138,7 @@ def check_style():
         default_tor_port = 9150
         style_choice = 'equilux'
         return default_tor, default_tor_port, default_price_request, default_currency, style_choice
+
 
 # KMD Icon
 root.iconbitmap(ico)
@@ -176,6 +188,7 @@ current_balance_text = ttk.Label(root, text="Balance: please login first!")
 current_balance_fiat = ttk.Label(root, text="")
 running_tor = ttk.Label(root, text="")
 logout_timer_text = ttk.Label(root, text="Logout in: please login first!")
+
 
 # buttons bindings
 def get_new_address(event):
@@ -300,9 +313,11 @@ def custom_paste(event):
     event.widget.insert("insert", event.widget.clipboard_get())
     return "break"
 
+
 def transaction_info(event):
     message = 'Need to get tx history from RPC'
     transaction_history_messages.replace('1.0', '100.0', message)
+
 
 # Address Book
 def address_book_popup():
@@ -360,6 +375,7 @@ def address_book_popup():
 
     popup.mainloop()
 
+
 # loads address book into Dictionary
 def load_address_book():
     try:
@@ -374,6 +390,7 @@ def load_address_book():
     except:
         print("Could not open address book")
 
+
 # adds entry to address book
 def add_address_book(name, address):
     load_address_book()
@@ -385,6 +402,7 @@ def add_address_book(name, address):
     else:
         print('{} is already in address book, please use different name'.format(name))
 
+
 # saves address book to CSV
 def save_address_book(addressBook):
     with open('lib/address_book.csv', 'w') as f:
@@ -393,6 +411,7 @@ def save_address_book(addressBook):
             entry = [name[0], name[1]]
             writer.writerow(entry)
             load_address_book()  # reloads address book
+
 
 # delete entry from address book
 def delete_address_book_entry(name):
@@ -403,12 +422,14 @@ def delete_address_book_entry(name):
     else:
         print('{} was not found in address book'.format(name))
 
+
 # fills 'send to address' with click from address book
 def select_item_book(event):
     address_input.delete(0, 'end')
     curItem = address_book_messages.focus()
     curAddress = address_book_messages.item(curItem)['values'][1]
     address_input.insert(0, curAddress)
+
 
 # updates address book on main page
 def main_address_book():
@@ -420,9 +441,10 @@ def main_address_book():
     for name in addressBook.items():
         address_book_messages.insert('', 'end', values=[(name[0]), (name[1])])
 
+
 # Price information
 def get_price(fiat):
-    default_currency = fiat
+    default_currency_price = fiat
     if default_price_request == 0:
         print('updating prices...')
         url = 'https://api.coinpaprika.com/v1/tickers/{0}?quotes={1}'.format(coin, fiat)
@@ -430,13 +452,15 @@ def get_price(fiat):
         if default_tor == 0:
             try:
                 session = requests.session()
-                session.proxies = {'http':  'socks5://127.0.0.1:{}'.format(default_tor_port), 'https': 'socks5://127.0.0.1:{}'.format(default_tor_port)}  # 9150
+                session.proxies = {'http':  'socks5://127.0.0.1:{}'.format(default_tor_port),
+                                   'https': 'socks5://127.0.0.1:{}'.format(default_tor_port)}  # 9150
                 response = session.get(url, headers=useragent)
                 print(session.get('https://httpbin.org/ip').json())  # checking IP address to ensure its Tor
                 print('price requested through Tor')
                 wallet_interact_messages.replace('1.0', '100.0',"")
             except:
-                wallet_interact_messages.replace('1.0', '100.0', "Sorry that Tor port isn't open! please change port number in settings")
+                wallet_interact_messages.replace('1.0', '100.0', "Sorry that Tor port isn't open!"
+                                                                 " please change port number in settings")
         else:
             response = requests.get(url, headers=useragent)
         if response.status_code == 200:
@@ -472,6 +496,7 @@ def disable_prices():
     else:
         default_price_request = 1
         print('price disabled')
+
 
 def select_tor_port():
     tor_popup = tkT.ThemedTk()
@@ -510,11 +535,13 @@ def enable_tor():
         running_tor.configure(text='')
         print('Tor disabled')
 
+
 # exit button on toolbar logs out then closes app
 def safe_close():
     nspv_logout(event=True)
     save_style()
     root.quit()
+
 
 # Button bindings
 nspv_login_button.bind('<Button-1>', nspv_login)
@@ -588,7 +615,6 @@ fiatmenu.add_command(label='JPY', command=lambda: get_price('JPY'))
 fiatmenu.add_command(label='KRW', command=lambda: get_price('KRW'))
 fiatmenu.add_command(label='RUB', command=lambda: get_price('RUB'))
 fiatmenu.add_command(label='USD', command=lambda: get_price('USD'))
-
 
 # lets go
 root.eval('tk::PlaceWindow %s center' % root.winfo_pathname(root.winfo_id())) # center window
