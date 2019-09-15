@@ -17,21 +17,32 @@ import json
 import requests
 from fake_useragent import UserAgent
 
+
+if not sys.argv[2]:
+    print("please issue correct command -- AE: ./main.py komodod KMD")
+    sys.exit()
+
 # Configures what coin the wallet Design is for
-with open('lib/wallet_build.txt') as json_file:
+with open('lib/wallet_build.json') as json_file:
     data = json.load(json_file)
-    ico = data['Ico_logo'] # ex: "lib/kmd.ico"
-    pngLogo = data['Main_logo'] # ex:  'lib/KMD_Horiz_Dark.png'
-    coin = data['Coin'] # ex:  'KMD-komodo'
-    appTitle = data['App_title'] # ex: "Komodo nSPV pywallet"
+    ico = data['Ico_logo']  # ex: "lib/kmd.ico"
+    pngLogo = data['Main_logo']  # ex:  'lib/KMD_Horiz_Dark.png'
+    coin = data['Coin']  # ex:  'KMD-komodo'
+    appTitle = data['App_title']  # ex: "Komodo nSPV pywallet"
 
 # daemon initialization
 try:
-    ac_name = sys.argv[1]
+    ac_name = sys.argv[2]
     rpc_proxy = nspvwallet.def_credentials(ac_name)
 except IndexError:
-    print("Please use chain ticker as first start argument. For example: ./main.py KMD")
+    print("Please use chain ticker as second start argument. For example: ./main.py komodod KMD")
     sys.exit()
+
+
+# TODO: enable coins file and assetchains file checker
+def check_coinsparam():
+    pass
+
 
 # checking if daemon connected
 connect_attempts_counter = 0
@@ -43,27 +54,32 @@ while True:
             print("nspv_getinfo")
             print(get_info_output)
             if "nSPV" in get_info_output and get_info_output["nSPV"] == "superlite":
-                print(sys.argv[1] + " daemon is running. Welcome to nSPV pywallet!")
+                print(sys.argv[2] + " daemon is running. Welcome to nSPV pywallet!")
                 break
             else:
-                print("Please restart " + sys.argv[1] + " daemon in nSPV client mode (-nSPV=1 param)")
+                print("Please restart " + sys.argv[2] + " daemon in nSPV client mode (-nSPV=1 param)")
                 sys.exit()
         except Exception as e:
             print(e)
-            print(sys.argv[1] + " daemon is not started! Lets try to start")
+            print(sys.argv[2] + " daemon is not started! Lets try to start")
             # TODO: have to parse json with params
-            if sys.argv[1] == "KMD":
-                subprocess.call(['./komodod', '-nSPV=1', '-connect=23.254.165.16', '-listen=0', '-daemon'])
-                time.sleep(1)
-            elif sys.argv[1] == "ILN":
-                subprocess.call(['./komodod', '-ac_name=ILN', '-ac_supply=10000000000', '-ac_cc=2', '-nSPV=1',
-                                 '-connect=5.9.102.210', '-listen=0', '-daemon'])
-                time.sleep(1)
-            else:
-                print("I don't know params for this chain. Exiting")
-                sys.exit()
+            # kd_path = '$HOME/komodod/src'  # default Linux/Darwin path to komodod exec folder
+            # ln_path = '$HOME/libnspv'  # default Linux/Darwin path to nspv exec folder
+            if sys.argv[1] == 'komodod':
+                if sys.argv[2] == "KMD":
+                    subprocess.call(['./komodod', '-nSPV=1', '-connect=23.254.165.16', '-listen=0', '-daemon'])
+                    time.sleep(1)
+                elif sys.argv[2] == "ILN":
+                    subprocess.call(['./komodod', '-ac_name=ILN', '-ac_supply=10000000000', '-ac_cc=2', '-nSPV=1',
+                                     '-connect=5.9.102.210', '-listen=0', '-daemon'])
+                    time.sleep(1)
+                else:
+                    print("I don't know params for this chain. Exiting")
+                    sys.exit()
+            elif sys.argv[1] == 'nspv':
+                 pass
     else:
-        print("daemon for " + sys.argv[1] + " not started and can't start it. Exiting.")
+        print("daemon for " + sys.argv[2] + " not started and can't start it. Exiting.")
         sys.exit()
 
 # main window
@@ -72,7 +88,8 @@ root.title(appTitle)
 root.resizable(False, False)
 addressBook = {}
 ua = UserAgent()
-currency_symbols = {'BTC':'₿','USD':'$','EUR':'€','KRW':'₩','GBP':'£','CAD':'$','JPY':'¥','RUB':'₽','AUD':'$','CNY':'¥','INR':'₹'}
+currency_symbols = {'BTC': '₿', 'USD': '$', 'EUR': '€', 'KRW': '₩', 'GBP': '£', 'CAD': '$',
+                    'JPY': '¥', 'RUB': '₽', 'AUD': '$', 'CNY': '¥', 'INR': '₹'}
 
 # Styling and Functions
 style = ttk.Style()
@@ -141,7 +158,8 @@ def check_style():
 
 
 # KMD Icon
-root.iconbitmap(ico)
+# TODO: fix icon trouble
+# root.iconbitmap(ico)
 
 # KMD Logo
 img = PhotoImage(file=pngLogo).subsample(3,3)
@@ -191,7 +209,7 @@ logout_timer_text = ttk.Label(root, text="Logout in: please login first!")
 
 
 # buttons bindings
-def get_new_address(event):
+def get_new_address():
     new_address_info = rpc_proxy.getnewaddress()
     print("getnewaddress")
     print(new_address_info)

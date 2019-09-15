@@ -23,7 +23,8 @@ class CustomProxy(slickrpc.Proxy):
 
 
 def def_credentials(chain):
-    rpcport =''
+    rpcport = ''
+    ac_dir = ''
     operating_system = platform.system()
     if operating_system == 'Darwin':
         ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
@@ -52,4 +53,4 @@ def def_credentials(chain):
             print("check "+coin_config_file)
             exit(1)
 
-    return(CustomProxy("http://%s:%s@127.0.0.1:%d"%(rpcuser, rpcpassword, int(rpcport))))
+    return CustomProxy("http://%s:%s@127.0.0.1:%d" % (rpcuser, rpcpassword, int(rpcport)))
