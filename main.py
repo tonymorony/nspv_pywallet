@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# komodod -nSPV=1 -ac_reward=100000000  -ac_name=NSPV -ac_supply=10000000000 -ac_cc=2 -addressindex=1 -spentindex=1 -connect=5.9.102.210 &
-# ./komodod -nSPV=1 -addnode=5.9.253.195 &
 
 # import platform
 # import os
@@ -16,11 +14,7 @@ import csv
 import json
 import requests
 from fake_useragent import UserAgent
-
-
-if not sys.argv[2]:
-    print("please issue correct command -- AE: ./main.py komodod KMD")
-    sys.exit()
+from lib import libnspv
 
 # Configures what coin the wallet Design is for
 with open('lib/wallet_build.json') as json_file:
@@ -32,10 +26,24 @@ with open('lib/wallet_build.json') as json_file:
 
 # daemon initialization
 try:
-    ac_name = sys.argv[2]
-    rpc_proxy = nspvwallet.def_credentials(ac_name)
+    if sys.argv[1] == 'komodod':
+        print("initialising pywallet with komodod compatibility.")
+        try:
+            ac_name = sys.argv[2]
+            rpc_proxy = nspvwallet.def_credentials(ac_name)
+        except IndexError:
+            print("Please use chain ticker as second start argument. For example: ./main.py komodod KMD")
+            sys.exit()
+    if sys.argv[1] == 'nspv':
+        print("initialising pywallet with komodod compatibility.")
+        try:
+            ac_name = sys.argv[2]
+            rpc_proxy = libnspv.def_credentials(ac_name)
+        except IndexError:
+            print("Please use chain ticker as second start argument. For example: ./main.py komodod KMD")
+            sys.exit()
 except IndexError:
-    print("Please use chain ticker as second start argument. For example: ./main.py komodod KMD")
+    print("Please issue correct starting parameters. AE: ./main.py komodod KMD")
     sys.exit()
 
 
@@ -67,17 +75,28 @@ while True:
             # ln_path = '$HOME/libnspv'  # default Linux/Darwin path to nspv exec folder
             if sys.argv[1] == 'komodod':
                 if sys.argv[2] == "KMD":
-                    subprocess.call(['./komodod', '-nSPV=1', '-connect=23.254.165.16', '-listen=0', '-daemon'])
+                    subprocess.call(['./komodod', '-nSPV=1', '-addnode=23.254.165.16', '-listen=0', '-daemon'])
                     time.sleep(1)
                 elif sys.argv[2] == "ILN":
                     subprocess.call(['./komodod', '-ac_name=ILN', '-ac_supply=10000000000', '-ac_cc=2', '-nSPV=1',
-                                     '-connect=5.9.102.210', '-listen=0', '-daemon'])
+                                     '-addnode=5.9.102.210', '-listen=0', '-daemon'])
                     time.sleep(1)
                 else:
                     print("I don't know params for this chain. Exiting")
                     sys.exit()
             elif sys.argv[1] == 'nspv':
-                 pass
+                known_chains = ['KMD', 'ILN', 'HUSH', 'NSPV']  # TODO: read 'em from coins file
+                if sys.argv[2] not in known_chains:
+                    print("Unknown chain: " + sys.argv[2])
+                    sys.exit()
+                else:
+                    command = ["./nspv", sys.argv[2]]
+                    nspv = subprocess.Popen(command, shell=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+                    if nspv.poll():
+                        print("nspv not running")
+                    else:
+                        print("nspv is running")
+                    time.sleep(1)
     else:
         print("daemon for " + sys.argv[2] + " not started and can't start it. Exiting.")
         sys.exit()
