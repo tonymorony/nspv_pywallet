@@ -16,18 +16,27 @@ Python3 required for execution:
 
 pip packages needed:
 
-* `pip3 install setuptools wheel slick-bitcoinrpc fake-useragent ttkthemes`
+* `pip3 install setuptools wheel slick-bitcoinrpc fake-useragent ttkthemes requests ast`
 
 ## Starting:  
 
-* Put wallet files to same folder with komodod or put komodod to the same folder with wallet (komodod should support nSPV)
+* Put wallet files to same folder with komodod or libnspv executable (komodod version should support nSPV mode)
+* 
 
-* Specify chain ticker as cli arg on start. For now KMD and ILN supported: 
-`python3 main.py KMD` or `python3 main.py ILN`
+* Specify executable to be used(komodod or nspv) and chain ticker as cli arg on start. For now KMD and ILN chains are supported:
+`python3 main.py nspv KMD` or `python3 main.py komodod ILN`
 
 If daemon wasn't started - wallet will start it for you. If daemon was started as nSPV superlight client - wallet should start fine as well.
 
 Otherwise you'll need to stop daemon first then start wallet.
 
 ## Disclosure
-* Current build makes price requests to Coinpaprika by default every 5 minutes, when Refresh button is pressed, or fiat currency is changed. This will display your IP address to Coinpaprika during this request, if you would like, you can disable prices in the settings menu by simply clicking 'Disable/Enable prices' and renable it the same way. I am working on a solution to mask your IP address.
+* Current build has price requests disabled by default. You can enable prices through the settings menu and the wallet will save your most previous settings when properly shutdown. You can also enable Tor so that price requests will be routed through Tor while using a randomly generated user agent. The wallet makes price requests to Coinpaprika every 5 minutes, when Refresh button is pressed, or fiat currency is changed. This will display your IP address to Coinpaprika during this request, enabling Tor will not display your IP address to Coinpaprika, but will instead route your request through Tor.
+
+* Tor port 9150 is used by default, but this can be changed in the settings menu depending on what port you are using. Tor must be running already for this to work, the wallet will not start tor for you. To learn what Port Tor browser is using, in the browser go to the three lines (open menu), click options, scroll to the bottom to "Network Proxy" and click settings, you should see the port number for SOCKS Host. You can set the wallet to use this port number.
+
+If you would like to Donate please send to one of these addresses:
+* KMD - RHFvWs5GM92wuSZSXKey67CYHRcwytFmfe
+* BTC - 15eWSwNgkXkTdQfYMUPaSd81FbhVgGeFsv
+* ARRR - zs1verrcrg8q3leh6x76p5equwj453j0ts7eqvc02l3lmkcnf4nuwu5w53jpaayh7uvsx4pu0z0fxt
+* HUSH - RHFvWs5GM92wuSZSXKey67CYHRcwytFmfe
